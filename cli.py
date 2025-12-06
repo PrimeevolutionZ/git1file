@@ -11,9 +11,13 @@ from git1file.models.schemas import OutputFormat, ScanMode
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert Git repos to single file")
+    parser = argparse.ArgumentParser(
+        description="Convert Git repos to single file",
+        epilog="Default format is now 'plain' for better LLM readability and token efficiency."
+    )
     parser.add_argument("source", help="Local path or remote URL")
-    parser.add_argument("--format", choices=["xml", "plain", "json"], default="xml")
+    parser.add_argument("--format", choices=["xml", "plain", "json"], default="plain",
+                       help="Output format (default: plain)")
     parser.add_argument("--mode", choices=["full", "smart"], default="smart",
                        help="Scan mode: 'full' includes all files, 'smart' excludes service files")
     parser.add_argument("--output", "-o", help="Output file (stdout if not specified)")

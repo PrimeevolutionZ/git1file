@@ -4,8 +4,6 @@ from fastapi.responses import Response, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from pathlib import Path
-import tempfile
-import shutil
 import yaml
 import logging
 
@@ -40,7 +38,7 @@ def health_check():
 
 class IngestRequest(BaseModel):
     source: str
-    format: OutputFormat = OutputFormat.XML
+    format: OutputFormat = OutputFormat.PLAIN
     compress: bool = True
     mode: ScanMode = ScanMode.SMART
 
@@ -56,7 +54,7 @@ async def ingest_repository(
         compress = body.compress
         mode = body.mode
 
-        logger.info(f"Processing source: {source}, mode: {mode}")
+        logger.info(f"Processing source: {source}, mode: {mode}, format: {format}")
         repo_path, is_temp, remote_url = process_source(source)
 
         if is_temp:
@@ -118,6 +116,7 @@ async def get_stats(
 
 @app.get("/api/v1/config/template")
 def get_config_template():
+    """Get configuration template with plain as default format."""
     template_config = ConfigSchema()
     return yaml.safe_dump(template_config.dict(), default_flow_style=False)
 

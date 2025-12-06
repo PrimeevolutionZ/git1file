@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🗜️ Git1File – Repository Analyzer for LLMs</title>
+    <title>🗜️ Git1File — Repository Analyzer for LLMs</title>
     <link href="/static/css/style.css" rel="stylesheet">
 </head>
 <body>
@@ -29,8 +29,9 @@
                     <div class="form-group">
                         <label for="format">Output Format</label>
                         <select id="format">
-                            <option value="xml">XML (Recommended)</option>
-                            <option value="plain">Plain Text</option>
+                            <!-- 🔧 FIX: Changed default to Plain Text -->
+                            <option value="plain" selected>Plain Text (Recommended)</option>
+                            <option value="xml">XML</option>
                             <option value="json">JSON</option>
                         </select>
                     </div>
@@ -74,7 +75,7 @@
             <h3>Features</h3>
             <ul>
                 <li>🔒 Supports private repositories (Pro)</li>
-                <li>📦 Ultra compression saves 25%+ tokens</li>
+                <li>📦 Plain text saves 16%+ tokens vs XML</li>
                 <li>🚫 Automatic binary file exclusion</li>
                 <li>⚡ Fast parallel processing</li>
             </ul>

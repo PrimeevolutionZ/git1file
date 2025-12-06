@@ -2,7 +2,6 @@
 import yaml
 from pathlib import Path
 from typing import Optional
-from pydantic_settings import BaseSettings
 from .models.schemas import ConfigSchema, ScanMode
 
 SMART_IGNORE_PATTERNS = [
@@ -27,18 +26,20 @@ FULL_IGNORE_PATTERNS = [
 
 
 def load_config(config_path: Optional[Path] = None) -> ConfigSchema:
+    """Load configuration with plain format as default."""
     if config_path is None:
         config_path = Path(".git1file.yaml")
 
+    # 🔧 FIX: Changed default format from "xml" to "plain"
     config_dict = {
-        "output": {"format": "xml", "compress": True, "mode": "smart"},
+        "output": {"format": "plain", "compress": True, "mode": "smart"},
         "ignore": {
             "patterns": SMART_IGNORE_PATTERNS,
             "use_gitignore": True,
             "use_default_patterns": True
         },
         "include": {
-            "max_file_size": "5MB",
+            "max_file_size": "5MB",  # 🔧 FIX: Consistent with actual usage
             "max_total_files": 50000,
             "max_total_chars": 500000000,
             "binary_detection": True
@@ -62,6 +63,7 @@ def load_config(config_path: Optional[Path] = None) -> ConfigSchema:
 
 
 def get_config_for_repo(repo_path: Path) -> ConfigSchema:
+    """Get config for repository, searching parent directories."""
     current = repo_path.resolve()
     for parent in [current] + list(current.parents):
         config_path = parent / ".git1file.yaml"

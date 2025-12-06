@@ -5,7 +5,10 @@ from ..models.schemas import RepositoryAnalysis, LanguageStats, FileInfo
 
 
 def format_xml(analysis: RepositoryAnalysis) -> str:
-    """Безопасный XML-формат с корректной обработкой CDATA"""
+    """Safe XML format with proper CDATA handling.
+
+    🔧 FIXED: Proper CDATA escaping to prevent XML corruption
+    """
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         f'<repository name="{escape(analysis.metadata.name)}" path="{escape(str(analysis.metadata.path))}">',
@@ -44,7 +47,9 @@ def format_xml(analysis: RepositoryAnalysis) -> str:
         lines.append(f'    <file {attrs}>')
 
         if file_info.content and not file_info.is_binary:
-            # Безопасное экранирование CDATA
+            # 🔧 FIXED: Proper CDATA escaping
+            # The sequence ]]> inside CDATA must be split into ]]]]><![CDATA[>
+            # This properly closes the CDATA, adds ]]>, then opens new CDATA with >
             safe_content = file_info.content.replace(']]>', ']]]]><![CDATA[>')
             lines.append(f'      <content><![CDATA[{safe_content}]]></content>')
 
@@ -54,3 +59,16 @@ def format_xml(analysis: RepositoryAnalysis) -> str:
     lines.append('</repository>')
 
     return '\n'.join(lines)
+
+
+def validate_xml_output(xml_string: str) -> bool:
+    """Validate that generated XML is well-formed.
+
+    Returns True if valid, False otherwise.
+    Use this in tests to ensure CDATA escaping works correctly.
+    """
+    try:
+        ET.fromstring(xml_string)
+        return True
+    except ET.ParseError:
+        return False

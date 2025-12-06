@@ -1,7 +1,6 @@
 ﻿from pydantic import BaseModel, Field
 from enum import Enum
 from typing import List, Optional
-from pathlib import Path
 
 
 class OutputFormat(str, Enum):
@@ -53,14 +52,14 @@ class IgnoreConfig(BaseModel):
 
 
 class IncludeConfig(BaseModel):
-    max_file_size: str = "1MB"
+    max_file_size: str = "5MB"
     max_total_files: int = 50000
     max_total_chars: int = 500_000_000
     binary_detection: bool = True
 
 
 class OutputConfig(BaseModel):
-    format: OutputFormat = OutputFormat.XML
+    format: OutputFormat = OutputFormat.PLAIN
     compress: bool = True
     mode: ScanMode = ScanMode.SMART
 
