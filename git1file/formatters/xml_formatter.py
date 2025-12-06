@@ -28,7 +28,7 @@ def format_xml(analysis: RepositoryAnalysis) -> str:
         for lang in analysis.metadata.languages:
             lines.append(
                 f'      <language name="{escape(lang.name)}" '
-                f'files="{lang.files}" chars="{lang.chars}"/>'
+                f'files="{lang.files}" chars="{lang.characters}"/>'
             )
         lines.append('    </languages>')
 

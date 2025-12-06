@@ -3,7 +3,7 @@
 
 def format_plain(analysis: RepositoryAnalysis) -> str:
     """
-    Формат текста. удобненька.....
+    Формат текста. Удобненько...
     """
     lines = []
 
@@ -18,34 +18,28 @@ def format_plain(analysis: RepositoryAnalysis) -> str:
         lines.append(f"GIT BRANCH: {analysis.metadata.git_branch}")
         lines.append(f"GIT COMMIT: {analysis.metadata.git_commit}")
 
-    # Language statistics section
     if analysis.metadata.languages:
         lines.append("\nLANGUAGE STATISTICS:")
         lines.append("-" * 80)
         for lang in analysis.metadata.languages:
-            lines.append(f"  {lang.name}: {lang.files} files, {lang.chars} chars")
+            lines.append(f"  {lang.name}: {lang.files} files, {lang.characters} chars")  # ✅ исправлено
 
-
+    # Файлы
     lines.append("\n" + "=" * 80)
     lines.append("FILE CONTENTS")
     lines.append("=" * 80 + "\n")
 
-    # обработка
     for file_info in analysis.files:
-        # Пропускаем если дичь
         if file_info.is_binary or file_info.content is None:
             lines.append(f"# BINARY/LARGE FILE: {file_info.path}")
             continue
 
-        # метаданные
         lines.append("-" * 80)
         lines.append(f"FILE: {file_info.path}")
         if file_info.language:
             lines.append(f"LANGUAGE: {file_info.language}")
         lines.append(f"SIZE: {file_info.size} bytes")
         lines.append("-" * 40)
-
-        # файл
         lines.append(file_info.content)
         lines.append("\n")
 
@@ -54,16 +48,13 @@ def format_plain(analysis: RepositoryAnalysis) -> str:
 
 def format_compact(analysis: RepositoryAnalysis) -> str:
     """
-    Великое единение
+    Компактный формат: путь + контент.
     """
     lines = []
-
     for file_info in analysis.files:
         if file_info.is_binary or file_info.content is None:
             continue
-
         lines.append(f"// FILE: {file_info.path}")
         lines.append(file_info.content)
         lines.append("\n")
-
     return "\n".join(lines)

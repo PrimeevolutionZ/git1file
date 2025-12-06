@@ -1,11 +1,11 @@
 ﻿import json
 from typing import Any, Dict
-from git1file.models.schemas import RepositoryAnalysis
+from ..models.schemas import RepositoryAnalysis
 
 
 def format_json(analysis: RepositoryAnalysis) -> str:
     """
-    форматируем репо под JSON....
+    Форматируем репо под JSON.
     """
     output: Dict[str, Any] = {
         "name": analysis.metadata.name,
@@ -18,7 +18,7 @@ def format_json(analysis: RepositoryAnalysis) -> str:
                 {
                     "name": lang.name,
                     "files": lang.files,
-                    "chars": lang.chars
+                    "chars": lang.characters  # ✅ исправлено
                 }
                 for lang in analysis.metadata.languages
             ]
@@ -26,12 +26,10 @@ def format_json(analysis: RepositoryAnalysis) -> str:
         "files": []
     }
 
-    #добавляем метаданные
     if analysis.metadata.is_git_repo:
         output["metadata"]["git_branch"] = analysis.metadata.git_branch
         output["metadata"]["git_commit"] = analysis.metadata.git_commit
 
-    # Файлики
     for file_info in analysis.files:
         file_data = {
             "path": file_info.path,
@@ -39,11 +37,8 @@ def format_json(analysis: RepositoryAnalysis) -> str:
             "is_binary": file_info.is_binary,
             "language": file_info.language
         }
-
-        # медиа нам нахой не нада.
         if file_info.content and not file_info.is_binary:
             file_data["content"] = file_info.content
-
         output["files"].append(file_data)
 
     return json.dumps(output, indent=2, ensure_ascii=False)
@@ -51,7 +46,7 @@ def format_json(analysis: RepositoryAnalysis) -> str:
 
 def format_json_compact(analysis: RepositoryAnalysis) -> str:
     """
-   в правильную структуру
+    Компактный JSON: только файлы и контент.
     """
     output = {
         "files": [
@@ -63,16 +58,14 @@ def format_json_compact(analysis: RepositoryAnalysis) -> str:
             if file_info.content and not file_info.is_binary
         ]
     }
-
     return json.dumps(output, separators=(',', ':'), ensure_ascii=False)
 
 
 def format_json_lines(analysis: RepositoryAnalysis) -> str:
     """
-   в единый джсончик
+    JSON-Lines: одна строка на объект.
     """
     lines = []
-
 
     meta_line = {
         "type": "metadata",
@@ -80,7 +73,6 @@ def format_json_lines(analysis: RepositoryAnalysis) -> str:
         "total_files": analysis.metadata.total_files
     }
     lines.append(json.dumps(meta_line, ensure_ascii=False))
-
 
     for file_info in analysis.files:
         if file_info.content and not file_info.is_binary:
