@@ -114,7 +114,7 @@ async def ingest_repository(
 # ---------------------------------------------------------------------------
 # Stats – GET
 # ---------------------------------------------------------------------------
-@app.post("/api/v1/stats")
+@app.get("/api/v1/stats")
 async def get_stats(
     background_tasks: BackgroundTasks,
     source: str = Query(..., description="Local path or git URL"),
