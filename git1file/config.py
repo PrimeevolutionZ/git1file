@@ -1,16 +1,28 @@
-﻿import yaml
+﻿# git1file/config.py
+import yaml
 from pathlib import Path
 from typing import Optional
 from pydantic_settings import BaseSettings
-from .models.schemas import ConfigSchema
+from .models.schemas import ConfigSchema, ScanMode
 
-DEFAULT_IGNORE_PATTERNS = [
-    "*.exe", "*.dll", "*.so", "*.dylib",
-    "*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg",
-    "*.pdf", "*.doc", "*.docx",
-    "*.zip", "*.tar", "*.gz", "*.rar",
-    "*.pyc", "*.class",
-    "node_modules/", "__pycache__/", ".git/", ".venv/",
+SMART_IGNORE_PATTERNS = [
+    "*.exe", "*.dll", "*.so", "*.dylib", "*.bin", "*.dmg", "*.iso", "*.img",
+    "*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg", "*.ico", "*.bmp", "*.webp",
+    "*.mp4", "*.avi", "*.mov", "*.wmv", "*.flv", "*.mkv",
+    "*.mp3", "*.wav", "*.flac", "*.aac", "*.ogg",
+    "*.pdf", "*.doc", "*.docx", "*.xls", "*.xlsx", "*.ppt", "*.pptx", "*.odt",
+    "*.zip", "*.tar", "*.gz", "*.rar", "*.7z", "*.bz2", "*.xz", "*.tgz",
+    "*.pyc", "*.class", "*.o", "*.obj", "*.pyd", "*.pyo",
+    "node_modules/", "__pycache__/", ".git/", ".venv/", "venv/",
+    ".idea/", ".vscode/", "*.swp", "*.swo", "*~", ".DS_Store", "Thumbs.db",
+    "*.log", "*.cache", "*.tmp", "*.temp", "*.pid", "*.seed", "*.lock",
+    "package-lock.json", "yarn.lock", "poetry.lock", "Pipfile.lock",
+    "*.map", "*.min.js", "*.min.css", "*.bak", "*.backup",
+]
+
+FULL_IGNORE_PATTERNS = [
+    "*.exe", "*.dll", "*.zip", "*.tar", "*.gz", "*.rar",
+    ".git1file-output.*", "git1file-output.*",
 ]
 
 
@@ -19,9 +31,9 @@ def load_config(config_path: Optional[Path] = None) -> ConfigSchema:
         config_path = Path(".git1file.yaml")
 
     config_dict = {
-        "output": {"format": "xml", "compress": True},
+        "output": {"format": "xml", "compress": True, "mode": "smart"},
         "ignore": {
-            "patterns": DEFAULT_IGNORE_PATTERNS,
+            "patterns": SMART_IGNORE_PATTERNS,
             "use_gitignore": True,
             "use_default_patterns": True
         },

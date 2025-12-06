@@ -1,8 +1,4 @@
-﻿"""
-Git1File  –  FastAPI-сервис
-конвертирует Git-репозитории в один файл для LLM
-"""
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request
+﻿from fastapi import FastAPI, HTTPException, BackgroundTasks, Query, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -13,7 +9,7 @@ import shutil
 import yaml
 import logging
 
-from .models.schemas import OutputFormat, ConfigSchema
+from .models.schemas import OutputFormat, ConfigSchema, ScanMode
 from .analyzer import analyze_repository, get_quick_stats
 from .git_service import process_source, cleanup_temp_repo
 from .config import load_config
@@ -30,9 +26,6 @@ app = FastAPI(
     version="0.1.0"
 )
 
-# ---------------------------------------------------------------------------
-# Static & templates
-# ---------------------------------------------------------------------------
 app.mount("/static", StaticFiles(directory="git1file/ui/static"), name="static")
 templates = Jinja2Templates(directory="git1file/ui/templates")
 
@@ -40,49 +33,42 @@ MAX_TOTAL_FILES = 50_000
 MAX_TOTAL_CHARS = 500_000_000
 
 
-# ---------------------------------------------------------------------------
-# Health
-# ---------------------------------------------------------------------------
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", version: "0.1.0"}
+    return {"status": "healthy", "version": "0.1.0"}
 
 
-# ---------------------------------------------------------------------------
-# JSON-модель для POST /api/v1/ingest
-# ---------------------------------------------------------------------------
 class IngestRequest(BaseModel):
     source: str
     format: OutputFormat = OutputFormat.XML
     compress: bool = True
+    mode: ScanMode = ScanMode.SMART
 
 
-# ---------------------------------------------------------------------------
-# Основной эндпоинт – POST JSON
-# ---------------------------------------------------------------------------
 @app.post("/api/v1/ingest")
 async def ingest_repository(
     background_tasks: BackgroundTasks,
     body: IngestRequest,
 ):
     try:
-        source   = body.source
-        format   = body.format
+        source = body.source
+        format = body.format
         compress = body.compress
+        mode = body.mode
 
-        logger.info(f"Processing source: {source}")
+        logger.info(f"Processing source: {source}, mode: {mode}")
         repo_path, is_temp, remote_url = process_source(source)
 
         if is_temp:
             background_tasks.add_task(cleanup_temp_repo, repo_path, is_temp)
 
         config = load_config(repo_path / ".git1file.yaml")
-        config.output.format   = format
+        config.output.format = format
         config.output.compress = compress
+        config.output.mode = mode
 
         analysis = analyze_repository(repo_path, config)
 
-        # --- защита от перегрузки -----------------------------------------
         if analysis.metadata.total_files > MAX_TOTAL_FILES:
             raise HTTPException(
                 status_code=413,
@@ -91,14 +77,13 @@ async def ingest_repository(
         if analysis.metadata.total_characters > MAX_TOTAL_CHARS:
             raise HTTPException(status_code=413, detail="Repository too large")
 
-        # --- форматирование ------------------------------------------------
         if format == OutputFormat.XML:
             content = format_xml(analysis)
             media_type = "application/xml"
         elif format == OutputFormat.JSON:
             content = format_json(analysis)
             media_type = "application/json"
-        else:  # PLAIN
+        else:
             content = format_plain(analysis)
             media_type = "text/plain"
 
@@ -111,13 +96,11 @@ async def ingest_repository(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ---------------------------------------------------------------------------
-# Stats – GET
-# ---------------------------------------------------------------------------
 @app.get("/api/v1/stats")
 async def get_stats(
     background_tasks: BackgroundTasks,
     source: str = Query(..., description="Local path or git URL"),
+    mode: ScanMode = Query(ScanMode.SMART, description="Scan mode: full or smart"),
 ):
     try:
         repo_path, is_temp, _ = process_source(source)
@@ -125,6 +108,7 @@ async def get_stats(
             background_tasks.add_task(cleanup_temp_repo, repo_path, is_temp)
 
         config = load_config(repo_path / ".git1file.yaml")
+        config.output.mode = mode
         analysis = analyze_repository(repo_path, config)
         return get_quick_stats(analysis)
 
@@ -132,18 +116,12 @@ async def get_stats(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ---------------------------------------------------------------------------
-# Конфиги по GET
-# ---------------------------------------------------------------------------
 @app.get("/api/v1/config/template")
 def get_config_template():
     template_config = ConfigSchema()
     return yaml.safe_dump(template_config.dict(), default_flow_style=False)
 
 
-# ---------------------------------------------------------------------------
-# Главная страница (интерфейс
-# ---------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})

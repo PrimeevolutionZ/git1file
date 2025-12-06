@@ -5,11 +5,11 @@ from .models.schemas import (
     RepositoryAnalysis,
     RepositoryMetadata,
     LanguageStats,
-    FileInfo
+    FileInfo,
+    ConfigSchema
 )
 from .file_processor import scan_repository
 from .git_service import get_repo_info
-from .config import ConfigSchema
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def analyze_repository(repo_path: Path, config: ConfigSchema) -> RepositoryAnalysis:
     logger.info(f"Starting analysis of {repo_path}")
 
-    file_infos = scan_repository(repo_path, config.ignore, config.include)
+    file_infos = scan_repository(repo_path, config.ignore, config.include, config.output.mode)
 
     total_files = len(file_infos)
     total_chars = sum(f.size for f in file_infos)
@@ -46,7 +46,7 @@ def analyze_repository(repo_path: Path, config: ConfigSchema) -> RepositoryAnaly
 
     metadata = RepositoryMetadata(
         name=repo_path.name,
-        path=str(repo_path.resolve()),  # Всегда строка
+        path=str(repo_path.resolve()),
         total_files=total_files,
         total_characters=total_chars,
         languages=languages,
