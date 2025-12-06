@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗜️ Git1File – Repository Analyzer for LLMs</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>🗜️ Git1File</h1>
+        <p>Convert any Git repository into a single AI-friendly file</p>
+    </header>
+
+    <main>
+        <section class="input-section">
+            <form id="analyzeForm">
+                <div class="form-group">
+                    <label for="source">Repository URL or Local Path</label>
+                    <input
+                        type="text"
+                        id="source"
+                        placeholder="https://github.com/user/repo or /path/to/project"
+                        required
+                    >
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="format">Output Format</label>
+                        <select id="format">
+                            <option value="xml">XML (Recommended)</option>
+                            <option value="plain">Plain Text</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compress">Compression Mode</label>
+                        <select id="compress">
+                            <option value="true">Ultra (25% smaller)</option>
+                            <option value="false">Standard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <span id="btn-text">Analyze Repository</span>
+                    <div id="spinner" class="spinner hidden"></div>
+                </button>
+            </form>
+        </section>
+
+        <section class="stats-section hidden" id="statsSection">
+            <h3>Quick Stats</h3>
+            <div class="stats-grid" id="statsGrid"></div>
+        </section>
+
+        <section class="output-section hidden" id="outputSection">
+            <div class="section-header">
+                <h3>Generated Output</h3>
+                <div class="actions">
+                    <button id="copyBtn" class="btn-secondary">📋 Copy</button>
+                    <button id="downloadBtn" class="btn-secondary">💾 Download</button>
+                </div>
+            </div>
+            <pre id="output"><code></code></pre>
+            <div class="token-estimate">
+                <span id="tokenCount">0</span> tokens estimated
+            </div>
+        </section>
+
+        <section class="features">
+            <h3>Features</h3>
+            <ul>
+                <li>🔒 Supports private repositories (Pro)</li>
+                <li>📦 Ultra compression saves 25%+ tokens</li>
+                <li>🚫 Automatic binary file exclusion</li>
+                <li>⚡ Fast parallel processing</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Git1File v0.1.0 | <a href="/docs">API Docs</a> | <a href="/api/v1/config/template">Config Template</a></p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
