@@ -38,11 +38,14 @@ class RepositoryMetadata(BaseModel):
     git_branch: Optional[str] = None
     git_commit: Optional[str] = None
     is_git_repo: bool = False
+    markdown_files: int = 0
+    markdown_characters: int = 0
 
 
 class RepositoryAnalysis(BaseModel):
     metadata: RepositoryMetadata
     files: List[FileInfo]
+    markdown_files: List[FileInfo] = Field(default_factory=list)  # NEW: отдельный список markdown
 
 
 class IgnoreConfig(BaseModel):
@@ -56,6 +59,7 @@ class IncludeConfig(BaseModel):
     max_total_files: int = 50000
     max_total_chars: int = 500_000_000
     binary_detection: bool = True
+    include_markdown: bool = False
 
 
 class OutputConfig(BaseModel):

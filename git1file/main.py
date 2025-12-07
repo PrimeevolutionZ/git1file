@@ -11,9 +11,9 @@ from .models.schemas import OutputFormat, ConfigSchema, ScanMode
 from .analyzer import analyze_repository, get_quick_stats
 from .git_service import process_source, cleanup_temp_repo
 from .config import load_config
-from .formatters.plain_formatter import format_plain
-from .formatters.xml_formatter import format_xml
-from .formatters.json_formatter import format_json
+from .formatters.plain_formatter import format_plain, format_plain_markdown
+from .formatters.xml_formatter import format_xml, format_xml_markdown
+from .formatters.json_formatter import format_json, format_json_markdown
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class IngestRequest(BaseModel):
     format: OutputFormat = OutputFormat.PLAIN
     compress: bool = True
     mode: ScanMode = ScanMode.SMART
+    include_markdown: bool = False  # NEW
 
 
 @app.post("/api/v1/ingest")
@@ -53,8 +54,9 @@ async def ingest_repository(
         format = body.format
         compress = body.compress
         mode = body.mode
+        include_markdown = body.include_markdown
 
-        logger.info(f"Processing source: {source}, mode: {mode}, format: {format}")
+        logger.info(f"Processing source: {source}, mode: {mode}, format: {format}, markdown: {include_markdown}")
         repo_path, is_temp, remote_url = process_source(source)
 
         if is_temp:
@@ -64,6 +66,7 @@ async def ingest_repository(
         config.output.format = format
         config.output.compress = compress
         config.output.mode = mode
+        config.include.include_markdown = include_markdown
 
         analysis = analyze_repository(repo_path, config)
 
@@ -91,6 +94,46 @@ async def ingest_repository(
         raise
     except Exception as e:
         logger.exception("Ingest failed")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/v1/ingest/markdown")
+async def ingest_markdown_only(
+    background_tasks: BackgroundTasks,
+    body: IngestRequest,
+):
+    """Новый endpoint для скачивания только markdown файлов"""
+    try:
+        source = body.source
+        format = body.format
+
+        logger.info(f"Processing markdown from: {source}")
+        repo_path, is_temp, remote_url = process_source(source)
+
+        if is_temp:
+            background_tasks.add_task(cleanup_temp_repo, repo_path, is_temp)
+
+        config = load_config(repo_path / ".git1file.yaml")
+        config.output.format = format
+        config.output.mode = body.mode
+        config.include.include_markdown = False  # Всегда разделяем
+
+        analysis = analyze_repository(repo_path, config)
+
+        if format == OutputFormat.XML:
+            content = format_xml_markdown(analysis)
+            media_type = "application/xml"
+        elif format == OutputFormat.JSON:
+            content = format_json_markdown(analysis)
+            media_type = "application/json"
+        else:
+            content = format_plain_markdown(analysis)
+            media_type = "text/plain"
+
+        return Response(content=content, media_type=media_type)
+
+    except Exception as e:
+        logger.exception("Markdown ingest failed")
         raise HTTPException(status_code=400, detail=str(e))
 
 

@@ -6,8 +6,6 @@ from ..models.schemas import RepositoryAnalysis, LanguageStats, FileInfo
 
 def format_xml(analysis: RepositoryAnalysis) -> str:
     """Safe XML format with proper CDATA handling.
-
-    🔧 FIXED: Proper CDATA escaping to prevent XML corruption
     """
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
@@ -47,9 +45,6 @@ def format_xml(analysis: RepositoryAnalysis) -> str:
         lines.append(f'    <file {attrs}>')
 
         if file_info.content and not file_info.is_binary:
-            # 🔧 FIXED: Proper CDATA escaping
-            # The sequence ]]> inside CDATA must be split into ]]]]><![CDATA[>
-            # This properly closes the CDATA, adds ]]>, then opens new CDATA with >
             safe_content = file_info.content.replace(']]>', ']]]]><![CDATA[>')
             lines.append(f'      <content><![CDATA[{safe_content}]]></content>')
 
@@ -57,6 +52,28 @@ def format_xml(analysis: RepositoryAnalysis) -> str:
 
     lines.append('  </files>')
     lines.append('</repository>')
+
+    return '\n'.join(lines)
+
+
+def format_xml_markdown(analysis: RepositoryAnalysis) -> str:
+    """XML формат для markdown файлов"""
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        f'<markdown_documentation name="{escape(analysis.metadata.name)}">',
+        f'  <total_files>{len(analysis.markdown_files)}</total_files>',
+        '  <files>'
+    ]
+
+    for file_info in analysis.markdown_files:
+        if file_info.content:
+            safe_content = file_info.content.replace(']]>', ']]]]><![CDATA[>')
+            lines.append(f'    <file path="{escape(file_info.path)}" size="{file_info.size}">')
+            lines.append(f'      <content><![CDATA[{safe_content}]]></content>')
+            lines.append('    </file>')
+
+    lines.append('  </files>')
+    lines.append('</markdown_documentation>')
 
     return '\n'.join(lines)
 

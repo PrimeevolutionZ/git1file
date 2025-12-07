@@ -30,7 +30,6 @@ def load_config(config_path: Optional[Path] = None) -> ConfigSchema:
     if config_path is None:
         config_path = Path(".git1file.yaml")
 
-    # 🔧 FIX: Changed default format from "xml" to "plain"
     config_dict = {
         "output": {"format": "plain", "compress": True, "mode": "smart"},
         "ignore": {

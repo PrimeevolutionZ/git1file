@@ -29,7 +29,6 @@
                     <div class="form-group">
                         <label for="format">Output Format</label>
                         <select id="format">
-                            <!-- 🔧 FIX: Changed default to Plain Text -->
                             <option value="plain" selected>Plain Text (Recommended)</option>
                             <option value="xml">XML</option>
                             <option value="json">JSON</option>
@@ -37,15 +36,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="compress">Compression Mode</label>
-                        <select id="compress">
-                            <option value="true">Ultra (25% smaller)</option>
-                            <option value="false">Standard</option>
+                        <label for="mode">Scan Mode</label>
+                        <select id="mode">
+                            <option value="smart" selected>Smart (Fast, skips large/known files)</option>
+                            <option value="full">Full (Slow, includes everything)</option>
                         </select>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="includeMarkdown" name="includeMarkdown">
+                        <label for="includeMarkdown">Include Markdown Files (e.g., README.md)</label>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-primary">
+                <!-- Добавлен ID "analyzeButton" к кнопке -->
+                <button type="submit" class="btn-primary" id="analyzeButton">
                     <span id="btn-text">Analyze Repository</span>
                     <div id="spinner" class="spinner hidden"></div>
                 </button>
@@ -53,8 +58,26 @@
         </section>
 
         <section class="stats-section hidden" id="statsSection">
-            <h3>Quick Stats</h3>
-            <div class="stats-grid" id="statsGrid"></div>
+            <!-- Content for statistics section -->
+            <div class="section-header">
+                <h3>Analysis Statistics</h3>
+            </div>
+            <div id="statsGrid" class="stats-grid">
+                <!-- Stats will be injected here by JS -->
+            </div>
+
+            <!-- Markdown Summary Section -->
+            <div id="markdownInfo" class="markdown-info hidden">
+                <p>Found <span id="markdownCount" class="font-bold">0</span> Markdown files (<span id="markdownSize">0 KB</span>). They were excluded from the main output.</p>
+                <div class="markdown-actions">
+                    <button id="downloadMarkdownBtn" class="btn-markdown-secondary">
+                        📥 Download Markdown Files
+                    </button>
+                    <button id="includeMarkdownBtn" class="btn-markdown-secondary">
+                        ➕ Include in Next Analysis
+                    </button>
+                </div>
+            </div>
         </section>
 
         <section class="output-section hidden" id="outputSection">
@@ -74,10 +97,11 @@
         <section class="features">
             <h3>Features</h3>
             <ul>
-                <li>🔒 Supports private repositories (Pro)</li>
+                <li>📝 Markdown files excluded by default (saves tokens)</li>
                 <li>📦 Plain text saves 16%+ tokens vs XML</li>
                 <li>🚫 Automatic binary file exclusion</li>
                 <li>⚡ Fast parallel processing</li>
+                <li>🔒 Supports private repositories</li>
             </ul>
         </section>
     </main>

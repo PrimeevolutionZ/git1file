@@ -18,7 +18,7 @@ def format_json(analysis: RepositoryAnalysis) -> str:
                 {
                     "name": lang.name,
                     "files": lang.files,
-                    "chars": lang.characters  # ✅ исправлено
+                    "chars": lang.characters
                 }
                 for lang in analysis.metadata.languages
             ]
@@ -40,6 +40,25 @@ def format_json(analysis: RepositoryAnalysis) -> str:
         if file_info.content and not file_info.is_binary:
             file_data["content"] = file_info.content
         output["files"].append(file_data)
+
+    return json.dumps(output, indent=2, ensure_ascii=False)
+
+
+def format_json_markdown(analysis: RepositoryAnalysis) -> str:
+    """JSON формат для markdown файлов"""
+    output = {
+        "name": analysis.metadata.name,
+        "total_markdown_files": len(analysis.markdown_files),
+        "files": [
+            {
+                "path": f.path,
+                "size": f.size,
+                "content": f.content
+            }
+            for f in analysis.markdown_files
+            if f.content
+        ]
+    }
 
     return json.dumps(output, indent=2, ensure_ascii=False)
 
