@@ -38,7 +38,7 @@ def load_config(config_path: Optional[Path] = None) -> ConfigSchema:
             "use_default_patterns": True
         },
         "include": {
-            "max_file_size": "5MB",  # 🔧 FIX: Consistent with actual usage
+            "max_file_size": "5MB",
             "max_total_files": 50000,
             "max_total_chars": 500000000,
             "binary_detection": True
